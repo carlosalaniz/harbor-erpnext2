@@ -6,7 +6,6 @@ WORKDIR /home/frappe/frappe-bench
 
 # Install print_designer into the bench
 RUN bench get-app print_designer https://github.com/frappe/print_designer --branch v1.6.7 --skip-assets
-
 # Remove the hardcoded "Beta" badge from the header UI
 RUN sed -i '/<span class="indicator-pill no-indicator-dot ellipsis gray">Beta<\/span>/d' \
     apps/print_designer/print_designer/public/js/print_designer/components/layout/AppHeader.vue
@@ -40,8 +39,9 @@ COPY repatch.py /tmp/repatch.py
 RUN /home/frappe/frappe-bench/env/bin/pip install PyMuPDF==1.27.2.3 --quiet
 RUN python3 /tmp/repatch.py && python3 /tmp/patch_safe_exec.py
 
-# Build assets (writes to apps/print_designer/print_designer/public/dist/)
-RUN bench build --app print_designer
+# Build assets (writes to apps/print_designer/print_designer/public/dist/): done in the Harbor step
+# at the end, because sites/ is a VOLUME in the base image and the classic builder drops writes to it
+# between steps (apps.txt from get-app, sites/assets/assets.json from the build).
 
 # ── Custom order/invoice portal template ─────────────────────────────────────
 # Adds "Payments Received" and "Outstanding Balance" sections to the
@@ -80,6 +80,8 @@ COPY startup/ /home/frappe/harbor/
 RUN chmod 0755 /home/frappe/harbor/*.sh && chown -R frappe:frappe /home/frappe/harbor
 USER frappe
 RUN cd /home/frappe/frappe-bench \
+ && printf 'frappe\nerpnext\nprint_designer' > sites/apps.txt \
+ && bench build --app print_designer \
  && rm -rf /home/frappe/harbor/assets \
  && cp -rL assets /home/frappe/harbor/assets \
  && for app in frappe erpnext print_designer; do \
