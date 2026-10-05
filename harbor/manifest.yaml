@@ -1,0 +1,82 @@
+apiVersion: harbor/v1alpha1
+kind: Application
+metadata:
+  id: erpnext2
+  name: "ERPNext"
+  description: "ERPNext 15 with Print Designer, a custom portal theme and invoice/print fixes. Site erp2.local; MariaDB and Redis included."
+release:
+  revision: "1"
+  version: "15.107.0"
+deployment:
+  compose: compose.yaml
+  multiInstance: false
+  services:
+    frontend: application
+    erpnext2: application
+    websocket: application
+    scheduler: application
+    worker-default: application
+    worker-short: application
+    worker-long: application
+    erpnext2-db: infrastructure
+    erpnext2-redis-cache: infrastructure
+    erpnext2-redis-queue: infrastructure
+endpoints:
+  web:
+    service: frontend
+    containerPort: 8080
+    scheme: http
+    exposure: direct
+    browserContext: ordinary
+# The backend creates the site on its first start (a few minutes) before the web answers.
+health:
+  endpoint: web
+  path: /api/method/ping
+  expectedStatus: [200]
+  timeoutSeconds: 10
+  deadlineSeconds: 600
+ui:
+  primaryEndpoint: web
+provisionedCredentials:
+  service: erpnext2
+  passwordEnv: ADMIN_PASSWORD
+  username: Administrator
+  note: "Sign in as Administrator with this password on a new site. A site copied from another machine keeps its own users and passwords."
+# Links ERPNext sends out (emails, portal) use Harbor's main address for this app.
+hooks:
+  afterStart:
+    service: erpnext2
+    user: frappe
+    timeoutSeconds: 120
+    command: [/home/frappe/harbor/after-start.sh]
+storage:
+  - id: sites
+    composeVolume: sites
+    purpose: "Site configuration, uploaded files and attachments"
+    retention: retain
+  - id: assets
+    composeVolume: assets
+    purpose: "Built web assets (rebuilt from the image when it changes)"
+    retention: retain
+  - id: logs
+    composeVolume: logs
+    purpose: "ERPNext logs"
+    retention: retain
+  - id: mariadb
+    composeVolume: mariadb
+    purpose: "MariaDB database"
+    retention: retain
+secrets:
+  - id: db-root-password
+    bytes: 32
+    encoding: hex
+    retention: retain
+    bindings:
+      - {service: erpnext2-db, environment: MYSQL_ROOT_PASSWORD}
+      - {service: erpnext2, environment: DB_ROOT_PASSWORD}
+presentation:
+  tagline: "Accounting, inventory, sales and print formats"
+  category: finance
+  developer: "Frappe Technologies (ERPNext), packaged for Harbor"
+  website: https://erpnext.com
+  releaseNotes: "Revision 1: the custom ERPNext 15.107 build (Print Designer 1.6.7, portal theme, invoice and print fixes) as a Harbor app."

@@ -1,0 +1,212 @@
+/* 
+   ULTRA-MODERN PHARMA SaaS THEME 
+   Focus: Glassmorphism, Deep Blue Accents, High-End Spacing
+*/
+
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
+
+:root {
+    --primary: #0066FF;
+    --primary-hover: #0052CC;
+    --primary-soft: rgba(0, 102, 255, 0.05);
+    --navy: #0A192F;
+    --text-main: #1E293B;
+    --text-muted: #64748B;
+    --bg-body: #F1F5F9;
+    --glass-bg: rgba(255, 255, 255, 0.8);
+    --glass-border: rgba(255, 255, 255, 0.5);
+    --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+    --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+    --shadow-lg: 0 20px 25px -5px rgb(0 0 0 / 0.1), 0 8px 10px -6px rgb(0 0 0 / 0.1);
+    --radius-lg: 16px;
+    --radius-md: 12px;
+}
+
+body {
+    font-family: 'Inter', sans-serif;
+    background-color: var(--bg-body);
+    color: var(--text-main);
+    line-height: 1.6;
+    letter-spacing: -0.01em;
+}
+
+/* --- Layout & Containers --- */
+.portal-container {
+    max-width: 1100px;
+    margin: 0 auto;
+    padding: 3rem 1.5rem;
+}
+
+/* --- Navbar --- */
+.navbar {
+    background: var(--glass-bg) !important;
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    border-bottom: 1px solid var(--glass-border) !important;
+    padding: 1rem 2rem !important;
+    box-shadow: var(--shadow-sm);
+}
+
+.navbar-brand {
+    font-weight: 800;
+    font-size: 1.4rem;
+    color: var(--navy) !important;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.navbar-brand::before {
+    content: '';
+    width: 12px;
+    height: 12px;
+    background: var(--primary);
+    border-radius: 3px;
+    display: inline-block;
+}
+
+/* --- Sidebar --- */
+.sidebar-column {
+    background: transparent;
+    padding-right: 2rem;
+}
+
+.sidebar-items .list-group-item {
+    background: transparent;
+    border: none;
+    padding: 0.8rem 1.2rem;
+    margin-bottom: 0.4rem;
+    border-radius: var(--radius-md);
+    font-weight: 500;
+    color: var(--text-muted);
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.sidebar-items .list-group-item:hover {
+    background: var(--primary-soft);
+    color: var(--primary);
+    transform: translateX(4px);
+}
+
+.sidebar-items .list-group-item.active {
+    background: var(--primary) !important;
+    color: white !important;
+    box-shadow: 0 10px 15px -3px rgba(0, 102, 255, 0.3);
+}
+
+/* --- Cards & List Items --- */
+.list-item-container {
+    background: var(--glass-bg);
+    backdrop-filter: blur(8px);
+    border: 1px solid var(--glass-border);
+    border-radius: var(--radius-lg);
+    padding: 1.75rem;
+    margin-bottom: 1.5rem;
+    box-shadow: var(--shadow-md);
+    transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+    position: relative;
+    overflow: hidden;
+}
+
+.list-item-container:hover {
+    transform: translateY(-6px) scale(1.01);
+    box-shadow: var(--shadow-lg);
+    border-color: var(--primary);
+}
+
+.list-item-container::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    right: 0;
+    width: 100px;
+    height: 100px;
+    background: radial-gradient(circle at top right, rgba(0, 102, 255, 0.05), transparent);
+    pointer-events: none;
+}
+
+.list-item__title {
+    font-weight: 700;
+    font-size: 1.25rem;
+    color: var(--navy);
+    margin-bottom: 0.5rem;
+}
+
+.list-item__content {
+    color: var(--text-muted);
+    font-size: 1rem;
+}
+
+/* --- Indicators / Badges --- */
+.indicator {
+    padding: 0.4rem 1rem;
+    border-radius: 100px;
+    font-size: 0.75rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    border: none;
+}
+
+.indicator-orange { background: #FFF7ED; color: #EA580C; }
+.indicator-blue { background: #EFF6FF; color: #2563EB; }
+.indicator-green { background: #F0FDF4; color: #16A34A; }
+.indicator-red { background: #FEF2F2; color: #DC2626; }
+
+/* --- Buttons --- */
+.btn-primary {
+    background: var(--primary) !important;
+    border: none !important;
+    border-radius: var(--radius-md);
+    padding: 0.8rem 1.8rem;
+    font-weight: 600;
+    transition: all 0.3s;
+    box-shadow: 0 4px 14px 0 rgba(0, 118, 255, 0.39);
+}
+
+.btn-primary:hover {
+    background: var(--primary-hover) !important;
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(0, 118, 255, 0.23);
+}
+
+/* --- Typography --- */
+h1, h2, h3 {
+    color: var(--navy);
+    font-weight: 800;
+    letter-spacing: -0.03em;
+}
+
+.page-title {
+    font-size: 2.5rem;
+    margin-bottom: 2rem;
+}
+
+/* --- Mobile Optimizations --- */
+@media (max-width: 768px) {
+    .portal-container {
+        padding: 1.5rem 1rem;
+    }
+    
+    .list-item-container {
+        padding: 1.25rem;
+    }
+    
+    .page-title {
+        font-size: 1.8rem;
+    }
+    
+    .sidebar-column {
+        display: none;
+    }
+}
+
+/* --- Custom Pharma Touches --- */
+.list-item-container {
+    border-left: 4px solid var(--primary);
+}
+
+/* Smooth Scroll */
+html {
+    scroll-behavior: smooth;
+}
