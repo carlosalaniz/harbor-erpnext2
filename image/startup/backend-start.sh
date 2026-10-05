@@ -15,13 +15,11 @@ python3 /tmp/patch_safe_exec.py
 # 1. Assets: the image carries the complete built set; copy it into the shared volume
 #    (mounted at /home/frappe/frappe-bench/assets) whenever the image build changed.
 ASSETS=/home/frappe/frappe-bench/assets
-fresh_build=0
 if [ ! -f "$ASSETS/assets.json" ] || ! cmp -s /home/frappe/harbor/build-id "$ASSETS/.harbor-build-id"; then
   log "copying assets from image build $(cat /home/frappe/harbor/build-id)"
   find "$ASSETS" -mindepth 1 -maxdepth 1 -exec rm -rf {} +
   cp -a /home/frappe/harbor/assets/. "$ASSETS/"
   cp /home/frappe/harbor/build-id "$ASSETS/.harbor-build-id"
-  fresh_build=1
 fi
 
 # 2. common_site_config.json (was the configurator): the Compose service names are the addresses.
@@ -56,13 +54,20 @@ if [ ! -f "sites/$SITE/site_config.json" ]; then
   bench new-site "$SITE" --mariadb-user-host-login-scope='%' \
     --db-root-password "$DB_ROOT_PASSWORD" --admin-password "$ADMIN_PASSWORD" \
     --install-app erpnext --install-app print_designer --set-default
-  fresh_build=1
-fi
-
-# 4. Theme (was apply-theme): after site creation and whenever the image build changed.
-if [ "$fresh_build" = 1 ]; then
+  # 4. Theme (was apply-theme): only on a new site. An existing site keeps whatever theme its
+  #    Website Settings chose (the original site switched back to Standard).
   log "applying the website theme"
-  FRAPPE_SITE_NAME_HEADER="$SITE" python3 /tmp/apply_website_theme.py || log "theme step failed; retried after the next image change"
+  (cd sites && ../env/bin/python - <<'PY'
+import os, runpy, frappe
+run = runpy.run_path('/tmp/apply_website_theme.py')['run']
+frappe.init(site=os.environ['SITE_NAME'], sites_path='.')
+frappe.connect()
+try:
+    run()
+finally:
+    frappe.destroy()
+PY
+  ) || log "theme step failed; apply it from Website Settings"
 fi
 
 log "starting gunicorn"
