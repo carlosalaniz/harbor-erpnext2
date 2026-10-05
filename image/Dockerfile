@@ -14,28 +14,28 @@ RUN sed -i '/<span class="indicator-pill no-indicator-dot ellipsis gray">Beta<\/
 # Without this, non-standard formats persist the last-previewed doc's image URL as a
 # stale cached value, causing every print to show that stale image instead of the
 # current document's image.
-COPY patch_elementstore.py /tmp/patch_elementstore.py
+COPY --chown=frappe:frappe patch_elementstore.py /tmp/patch_elementstore.py
 RUN python3 /tmp/patch_elementstore.py
 
 # Fix: dynamic image macro checks element.image.parent but Print Designer stores
 # the doctype under element.image.doctype (not element.image.parent). This causes
 # the condition to always fail, falling through to frappe.db.get_value() with an
 # empty parentField, which returns the first DB record's image for every document.
-COPY patch_image_macro.py /tmp/patch_image_macro.py
+COPY --chown=frappe:frappe patch_image_macro.py /tmp/patch_image_macro.py
 RUN python3 /tmp/patch_image_macro.py
 
 # Fix: print_format.html iterates pd_format.body pages with no CSS page break
 # between them, so the PDF renderer (wkhtmltopdf/Chrome) decides the break point
 # arbitrarily — cutting content mid-element. Inject a page-break-before:always div
 # before every page after the first so each design page = one PDF page.
-COPY patch_print_format_html.py /tmp/patch_print_format_html.py
+COPY --chown=frappe:frappe patch_print_format_html.py /tmp/patch_print_format_html.py
 RUN python3 /tmp/patch_print_format_html.py
 
 # Inject io/os/PIL.Image/fitz/save_file into Frappe's safe_exec globals so that
 # Server Scripts can perform image processing without hitting the sandbox's
 # `ImportError: __import__ not found` restriction.
-COPY patch_safe_exec.py /tmp/patch_safe_exec.py
-COPY repatch.py /tmp/repatch.py
+COPY --chown=frappe:frappe patch_safe_exec.py /tmp/patch_safe_exec.py
+COPY --chown=frappe:frappe repatch.py /tmp/repatch.py
 RUN /home/frappe/frappe-bench/env/bin/pip install PyMuPDF==1.27.2.3 --quiet
 RUN python3 /tmp/repatch.py && python3 /tmp/patch_safe_exec.py
 
@@ -47,29 +47,29 @@ RUN python3 /tmp/repatch.py && python3 /tmp/patch_safe_exec.py
 # Adds "Payments Received" and "Outstanding Balance" sections to the
 # /invoices/<name> customer portal page (order.html is shared by all portal
 # transaction doctypes; the new block is guarded by {% if doc.doctype == 'Sales Invoice' %})
-COPY order.html apps/erpnext/erpnext/templates/pages/order.html
+COPY --chown=frappe:frappe order.html apps/erpnext/erpnext/templates/pages/order.html
 
 # ── Invoice list: total outstanding banner + per-row outstanding amount ────────
 # Patches sales_invoice.get_list_context to compute and inject a total
 # outstanding banner as context.introduction on /invoices
-COPY patch_sales_invoice_list.py /tmp/patch_sales_invoice_list.py
+COPY --chown=frappe:frappe patch_sales_invoice_list.py /tmp/patch_sales_invoice_list.py
 RUN python3 /tmp/patch_sales_invoice_list.py
 # Adds an "Outstanding: …" sub-line under each invoice's grand total on the list
-COPY transaction_row.html apps/erpnext/erpnext/templates/includes/transaction_row.html
+COPY --chown=frappe:frappe transaction_row.html apps/erpnext/erpnext/templates/includes/transaction_row.html
 
 # ── Remove "Powered by ERPNext" footer ────────────────────────────────────────
-COPY footer_powered.html apps/erpnext/erpnext/templates/includes/footer/footer_powered.html
+COPY --chown=frappe:frappe footer_powered.html apps/erpnext/erpnext/templates/includes/footer/footer_powered.html
 
 # ── Custom portal theme ───────────────────────────────────────────────────────
 # Copy the theme CSS into frappe's public directory so the configurator's
 # asset-copy step (cp -rL apps/frappe/frappe/public → sites/assets/frappe)
 # publishes it at /assets/frappe/css/custom_theme.css
 RUN mkdir -p apps/frappe/frappe/public/css
-COPY custom_theme.css apps/frappe/frappe/public/css/custom_theme.css
+COPY --chown=frappe:frappe custom_theme.css apps/frappe/frappe/public/css/custom_theme.css
 
 # Script that writes the <link> tag into Website Settings head_include
 # (run by the apply-theme service in docker-compose after the site exists)
-COPY apply_website_theme.py /tmp/apply_website_theme.py
+COPY --chown=frappe:frappe apply_website_theme.py /tmp/apply_website_theme.py
 
 # ── Harbor: what the one-shot services (configurator, create-site, apply-theme) did ──
 # Stage the complete built asset set once, at build time: the base image's bundles plus Print
