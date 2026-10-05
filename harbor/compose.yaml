@@ -11,8 +11,10 @@ services:
       FRAPPE_SITE_NAME_HEADER: erp2.local
       UPSTREAM_REAL_IP_ADDRESS: 0.0.0.0/0
       UPSTREAM_REAL_IP_HEADER: X-Forwarded-For
+    # nginx refuses to start until both upstream names resolve
     depends_on:
       erpnext2: {condition: service_started}
+      websocket: {condition: service_started}
     volumes:
       - {type: volume, source: sites, target: /home/frappe/frappe-bench/sites}
       - {type: volume, source: assets, target: /home/frappe/frappe-bench/assets}
