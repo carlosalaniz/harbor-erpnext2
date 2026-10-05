@@ -1,6 +1,8 @@
 # ERPNext (custom build) as a Harbor app. Same services and service names as the original
 # Compose stack, so a copied site's common_site_config.json keeps working; the one-shot services
-# (configurator, create-site, apply-theme) live in the backend's start script instead.
+# (configurator, create-site, apply-theme) live in the backend's start script instead. The others
+# wait for its common_site_config.json (Redis addresses) instead of crash-looping: a restarted
+# websocket would come back on a new IP that nginx (resolved once at start) no longer reaches.
 services:
   frontend:
     build: {context: ../image}
@@ -36,7 +38,7 @@ services:
 
   websocket:
     build: {context: ../image}
-    command: [node, apps/frappe/socketio.js]
+    command: [bash, -c, 'until grep -qs redis_socketio sites/common_site_config.json; do sleep 2; done; exec node apps/frappe/socketio.js']
     depends_on:
       erpnext2: {condition: service_started}
     volumes:
@@ -46,7 +48,7 @@ services:
 
   scheduler:
     build: {context: ../image}
-    command: [bench, schedule]
+    command: [bash, -c, 'until grep -qs redis_socketio sites/common_site_config.json; do sleep 2; done; exec bench schedule']
     depends_on:
       erpnext2: {condition: service_started}
     volumes:
@@ -56,7 +58,7 @@ services:
 
   worker-default:
     build: {context: ../image}
-    command: [bench, worker, --queue, default]
+    command: [bash, -c, 'until grep -qs redis_socketio sites/common_site_config.json; do sleep 2; done; exec bench worker --queue default']
     depends_on:
       erpnext2: {condition: service_started}
     volumes:
@@ -66,7 +68,7 @@ services:
 
   worker-short:
     build: {context: ../image}
-    command: [bench, worker, --queue, short]
+    command: [bash, -c, 'until grep -qs redis_socketio sites/common_site_config.json; do sleep 2; done; exec bench worker --queue short']
     depends_on:
       erpnext2: {condition: service_started}
     volumes:
@@ -76,7 +78,7 @@ services:
 
   worker-long:
     build: {context: ../image}
-    command: [bench, worker, --queue, long]
+    command: [bash, -c, 'until grep -qs redis_socketio sites/common_site_config.json; do sleep 2; done; exec bench worker --queue long']
     depends_on:
       erpnext2: {condition: service_started}
     volumes:

@@ -54,6 +54,7 @@ if [ ! -f "sites/$SITE/site_config.json" ]; then
   bench new-site "$SITE" --mariadb-user-host-login-scope='%' \
     --db-root-password "$DB_ROOT_PASSWORD" --admin-password "$ADMIN_PASSWORD" \
     --install-app erpnext --install-app print_designer --set-default
+  bench --site "$SITE" enable-scheduler
   # 4. Theme (was apply-theme): only on a new site. An existing site keeps whatever theme its
   #    Website Settings chose (the original site switched back to Standard).
   log "applying the website theme"
