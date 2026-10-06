@@ -103,6 +103,8 @@ services:
 
   erpnext2-redis-cache:
     image: redis@sha256:8b81dd37ff027bec4e516d41acfbe9fe2460070dc6d4a4570a2ac5b9d59df065
+    # A cache: never written to disk, so a restart starts empty (no stale cache across restarts).
+    command: [sh, -c, 'exec redis-server --save "" --appendonly no']
 
   erpnext2-redis-queue:
     image: redis@sha256:8b81dd37ff027bec4e516d41acfbe9fe2460070dc6d4a4570a2ac5b9d59df065

@@ -71,6 +71,12 @@ PY
   ) || log "theme step failed; apply it from Website Settings"
 fi
 
+# 5. Frappe's cache lives in redis-cache: drop it on every start so it is rebuilt from the database
+#    (a stale map from an earlier site, e.g. an empty install before a data copy, hides Server
+#    Scripts and other cached metadata until someone clears it by hand).
+log "clearing the cache (rebuilt from the database)"
+bench --site "$SITE" clear-cache || log "cache clear failed; run: bench --site $SITE clear-cache"
+
 log "starting gunicorn"
 exec /home/frappe/frappe-bench/env/bin/gunicorn \
   --chdir=/home/frappe/frappe-bench/sites \
